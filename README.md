@@ -14,5 +14,5 @@
 
 ## Usage
 
-    python3 photos_organizer/app.py -i "my/absolute/path/to/photos" -o "my/absolute/path/for/output"
+    $ python3 photos_organizer/app.py -i "my/absolute/path/to/photos" -o "my/absolute/path/for/output"
 
