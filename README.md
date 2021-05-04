@@ -8,14 +8,11 @@
 
 ## Installation
 
-    ```python
+    
     pip3 install -r requirements.txt
-    ```
+    
 
 ## Usage
 
-    ```python
     python3 photos_organizer/app.py -i "my/absolute/path/to/photos" -o "my/absolute/path/for/output"
-
-    ```
 
