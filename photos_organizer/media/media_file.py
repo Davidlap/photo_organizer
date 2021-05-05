@@ -5,53 +5,14 @@ from geopy.geocoders import Nominatim
 from PIL import Image, ExifTags
 
 
-class FileNotSupported(Exception):
-    """
-    Custom Exception to be raised
-    when a file is not a photo 
-    """
-    pass
-
-
-
 class MediaFile:
-
-    video_file_extensions = ('.mov', '.mp4', '.mpeg', '.avi')
-    photo_file_extensions = ('.jpg', '.jpeg', '.img', '.png')
-
 
     def __init__(self, file_path, full_file_name):
 
         self.file_path = file_path
         self.full_file_name = full_file_name
-        self.file_name, self.file_extension = self.get_file_name_and_file_extension()
         self.location_data = {}
         self.exif_data = {}
-
-
-    def get_file_name_and_file_extension(self):
-        """
-        Returns 2 variables, first with the filename only (MyFileName)
-        and second with the file extension (.jpg)
-        """
-
-        file_name , file_extension = os.path.splitext(self.full_file_name)
-        return file_name, file_extension 
-
-
-    def get_filetype(self):
-        """
-        Returns a string indicating whether the 
-        file is a video, photo or unknown based on the 
-        class variables with file extensions
-        """
-        
-        if self.file_extension.lower() in self.video_file_extensions:
-            return 'video'
-        elif self.file_extension.lower() in self.photo_file_extensions:
-            return 'photo'
-        else:
-            return 'unknown'
 
     def get_exif_data_with_human_readable_names(self):
         """
@@ -63,20 +24,15 @@ class MediaFile:
         by using the ExifTags fom pillow library
         """
 
-        # Returns None if picture has no exif data
-        if self.get_filetype() != 'photo':
-            raise FileNotSupported(f"Only files with extensions {self.photo_file_extensions} are supported")
-        else:
+        with Image.open(self.file_path) as img:
+            exif_data = img._getexif()
+            if exif_data:
+                # Replaces numeric IDs with correct EXIF parameters
+                exif = { ExifTags.TAGS[k]: v for k, v in exif_data.items() if k in ExifTags.TAGS }
+                self.exif_data = exif
+                return exif
 
-            with Image.open(self.file_path) as img:
-                exif_data = img._getexif()
-                if exif_data:
-                    # Replaces numeric IDs with correct EXIF parameters
-                    exif = { ExifTags.TAGS[k]: v for k, v in exif_data.items() if k in ExifTags.TAGS }
-                    self.exif_data = exif
-                    return exif
-
-                return exif_data
+            return exif_data
 
     def is_gps_info_available(self):
         """
@@ -126,11 +82,7 @@ class MediaFile:
         or empty dictionary if the result is None
         """
 
-        # Returns None if picture has no exif data
-        if self.get_filetype() != 'photo':
-            raise FileNotSupported(f"Only files with extensions {self.photo_file_extensions} are supported")
-        
-        elif self.is_gps_info_available():
+        if self.is_gps_info_available():
             gps_info = self.__get_gps_data()
             if len(gps_info) > 0:
                 geolocator = Nominatim(user_agent="myapp")
@@ -142,15 +94,16 @@ class MediaFile:
         else:
             return {}
 
+
+
     def __str__(self):
         
         return (
             f"File path: {self.file_path}\n"
-            f"File type: {self.get_filetype()}\n"
             f"GPS info available: {self.is_gps_info_available()}\n"
-            f"Location city: {self.location_data.get('address', {}).get('city')}\n"
-            f"Location town: {self.location_data.get('address', {}).get('town')}\n"
-            f"Location village: {self.location_data.get('address', {}).get('village')}\n"
-            f"Extra details: {self.location_data}\n\n\n"
+            f"Location city: {self.location_data.get('address', {}).get('city', "N/A")}\n"
+            f"Location town: {self.location_data.get('address', {}).get('town', "N/A")}\n"
+            f"Location village: {self.location_data.get('address', {}).get('village', "N/A")}\n"
+            f"Extra location details: {self.location_data}\n\n\n"
 
         )
