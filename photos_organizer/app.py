@@ -63,7 +63,7 @@ def main():
                         town = location_data.get("address", {}).get('town')
                         village = location_data.get("address", {}).get('village')
                         country_code = location_data.get("address", {}).get("country_code")
-                         # So far only saw city, Town and Village
+                        # So far only saw city, Town and Village
                         if city:
                             os.makedirs(os.path.join(args.output_folder, f"{city}-{country_code}"), exist_ok=True)
                             shutil.move(media_file.file_path, os.path.join(args.output_folder, f"{city}-{country_code}", media_file.full_file_name))
